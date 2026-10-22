@@ -1,0 +1,400 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://siglog.example/wms/events.schema.json",
+  "title": "SIG-Log WMS - contratos de eventos v1",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/MercadoriaRecebida"
+    },
+    {
+      "$ref": "#/$defs/ProdutoArmazenado"
+    },
+    {
+      "$ref": "#/$defs/EstoqueAtualizado"
+    },
+    {
+      "$ref": "#/$defs/PickingCriado"
+    },
+    {
+      "$ref": "#/$defs/PedidoSeparado"
+    },
+    {
+      "$ref": "#/$defs/PedidoEmbalado"
+    },
+    {
+      "$ref": "#/$defs/CargaExpedida"
+    }
+  ],
+  "$defs": {
+    "MercadoriaRecebida": {
+      "type": "object",
+      "required": [
+        "event",
+        "version",
+        "eventId",
+        "timestamp",
+        "correlationId",
+        "source",
+        "cargoId",
+        "receiptId",
+        "items"
+      ],
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "MercadoriaRecebida"
+        },
+        "version": {
+          "type": "integer",
+          "const": 1
+        },
+        "eventId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "correlationId": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "const": "wms"
+        },
+        "cargoId": {
+          "type": "string"
+        },
+        "receiptId": {
+          "type": "string"
+        },
+        "invoiceNumber": {
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "productId",
+              "quantity"
+            ],
+            "properties": {
+              "productId": {
+                "type": "string"
+              },
+              "quantity": {
+                "type": "integer",
+                "minimum": 1
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "ProdutoArmazenado": {
+      "type": "object",
+      "required": [
+        "event",
+        "version",
+        "eventId",
+        "timestamp",
+        "correlationId",
+        "source",
+        "productId",
+        "addressCode",
+        "quantity"
+      ],
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "ProdutoArmazenado"
+        },
+        "version": {
+          "type": "integer",
+          "const": 1
+        },
+        "eventId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "correlationId": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "const": "wms"
+        },
+        "productId": {
+          "type": "string"
+        },
+        "addressCode": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "EstoqueAtualizado": {
+      "type": "object",
+      "required": [
+        "event",
+        "version",
+        "eventId",
+        "timestamp",
+        "correlationId",
+        "source",
+        "productId",
+        "addressCode",
+        "delta",
+        "balance",
+        "reason"
+      ],
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "EstoqueAtualizado"
+        },
+        "version": {
+          "type": "integer",
+          "const": 1
+        },
+        "eventId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "correlationId": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "const": "wms"
+        },
+        "productId": {
+          "type": "string"
+        },
+        "addressCode": {
+          "type": "string"
+        },
+        "delta": {
+          "type": "integer"
+        },
+        "balance": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PickingCriado": {
+      "type": "object",
+      "required": [
+        "event",
+        "version",
+        "eventId",
+        "timestamp",
+        "correlationId",
+        "source",
+        "pickingId",
+        "orderId"
+      ],
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "PickingCriado"
+        },
+        "version": {
+          "type": "integer",
+          "const": 1
+        },
+        "eventId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "correlationId": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "const": "wms"
+        },
+        "pickingId": {
+          "type": "string"
+        },
+        "orderId": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PedidoSeparado": {
+      "type": "object",
+      "required": [
+        "event",
+        "version",
+        "eventId",
+        "timestamp",
+        "correlationId",
+        "source",
+        "pickingId",
+        "orderId"
+      ],
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "PedidoSeparado"
+        },
+        "version": {
+          "type": "integer",
+          "const": 1
+        },
+        "eventId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "correlationId": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "const": "wms"
+        },
+        "pickingId": {
+          "type": "string"
+        },
+        "orderId": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PedidoEmbalado": {
+      "type": "object",
+      "required": [
+        "event",
+        "version",
+        "eventId",
+        "timestamp",
+        "correlationId",
+        "source",
+        "packingId",
+        "orderId",
+        "volumes"
+      ],
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "PedidoEmbalado"
+        },
+        "version": {
+          "type": "integer",
+          "const": 1
+        },
+        "eventId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "correlationId": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "const": "wms"
+        },
+        "packingId": {
+          "type": "string"
+        },
+        "orderId": {
+          "type": "string"
+        },
+        "volumes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "CargaExpedida": {
+      "type": "object",
+      "required": [
+        "event",
+        "version",
+        "eventId",
+        "timestamp",
+        "correlationId",
+        "source",
+        "shipmentId",
+        "orderIds",
+        "destination"
+      ],
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "CargaExpedida"
+        },
+        "version": {
+          "type": "integer",
+          "const": 1
+        },
+        "eventId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "correlationId": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "const": "wms"
+        },
+        "shipmentId": {
+          "type": "string"
+        },
+        "orderIds": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "destination": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

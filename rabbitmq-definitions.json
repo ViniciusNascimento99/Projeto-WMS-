@@ -1,0 +1,325 @@
+{
+  "rabbit_version": "3.13",
+  "queues": [
+    {
+      "name": "tracking.wms.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "siglog.wms.dlx",
+        "x-dead-letter-routing-key": "tracking.wms.events"
+      }
+    },
+    {
+      "name": "tracking.wms.events.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "financeiro.wms.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "siglog.wms.dlx",
+        "x-dead-letter-routing-key": "financeiro.wms.events"
+      }
+    },
+    {
+      "name": "financeiro.wms.events.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "crm.wms.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "siglog.wms.dlx",
+        "x-dead-letter-routing-key": "crm.wms.events"
+      }
+    },
+    {
+      "name": "crm.wms.events.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "frota.wms.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "siglog.wms.dlx",
+        "x-dead-letter-routing-key": "frota.wms.events"
+      }
+    },
+    {
+      "name": "frota.wms.events.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "wms.pedidos.inbox",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "siglog.wms.dlx",
+        "x-dead-letter-routing-key": "wms.pedidos.inbox"
+      }
+    },
+    {
+      "name": "wms.pedidos.inbox.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "wms.coletas.inbox",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "siglog.wms.dlx",
+        "x-dead-letter-routing-key": "wms.coletas.inbox"
+      }
+    },
+    {
+      "name": "wms.coletas.inbox.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "siglog.wms.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "siglog.wms.dlx",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "siglog.crm.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "siglog.frota.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "siglog.wms.events",
+      "vhost": "/",
+      "destination": "tracking.wms.events",
+      "destination_type": "queue",
+      "routing_key": "wms.mercadoria.recebida.v1",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.events",
+      "vhost": "/",
+      "destination": "tracking.wms.events",
+      "destination_type": "queue",
+      "routing_key": "wms.produto.armazenado.v1",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.events",
+      "vhost": "/",
+      "destination": "tracking.wms.events",
+      "destination_type": "queue",
+      "routing_key": "wms.carga.expedida.v1",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.dlx",
+      "vhost": "/",
+      "destination": "tracking.wms.events.dlq",
+      "destination_type": "queue",
+      "routing_key": "tracking.wms.events",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.events",
+      "vhost": "/",
+      "destination": "financeiro.wms.events",
+      "destination_type": "queue",
+      "routing_key": "wms.mercadoria.recebida.v1",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.events",
+      "vhost": "/",
+      "destination": "financeiro.wms.events",
+      "destination_type": "queue",
+      "routing_key": "wms.estoque.atualizado.v1",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.events",
+      "vhost": "/",
+      "destination": "financeiro.wms.events",
+      "destination_type": "queue",
+      "routing_key": "wms.carga.expedida.v1",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.dlx",
+      "vhost": "/",
+      "destination": "financeiro.wms.events.dlq",
+      "destination_type": "queue",
+      "routing_key": "financeiro.wms.events",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.events",
+      "vhost": "/",
+      "destination": "crm.wms.events",
+      "destination_type": "queue",
+      "routing_key": "wms.picking.criado.v1",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.events",
+      "vhost": "/",
+      "destination": "crm.wms.events",
+      "destination_type": "queue",
+      "routing_key": "wms.pedido.separado.v1",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.events",
+      "vhost": "/",
+      "destination": "crm.wms.events",
+      "destination_type": "queue",
+      "routing_key": "wms.pedido.embalado.v1",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.events",
+      "vhost": "/",
+      "destination": "crm.wms.events",
+      "destination_type": "queue",
+      "routing_key": "wms.carga.expedida.v1",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.dlx",
+      "vhost": "/",
+      "destination": "crm.wms.events.dlq",
+      "destination_type": "queue",
+      "routing_key": "crm.wms.events",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.events",
+      "vhost": "/",
+      "destination": "frota.wms.events",
+      "destination_type": "queue",
+      "routing_key": "wms.pedido.embalado.v1",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.events",
+      "vhost": "/",
+      "destination": "frota.wms.events",
+      "destination_type": "queue",
+      "routing_key": "wms.carga.expedida.v1",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.dlx",
+      "vhost": "/",
+      "destination": "frota.wms.events.dlq",
+      "destination_type": "queue",
+      "routing_key": "frota.wms.events",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.crm.events",
+      "vhost": "/",
+      "destination": "wms.pedidos.inbox",
+      "destination_type": "queue",
+      "routing_key": "crm.pedido.criado.v1",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.dlx",
+      "vhost": "/",
+      "destination": "wms.pedidos.inbox.dlq",
+      "destination_type": "queue",
+      "routing_key": "wms.pedidos.inbox",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.frota.events",
+      "vhost": "/",
+      "destination": "wms.coletas.inbox",
+      "destination_type": "queue",
+      "routing_key": "frota.coleta.agendada.v1",
+      "arguments": {}
+    },
+    {
+      "source": "siglog.wms.dlx",
+      "vhost": "/",
+      "destination": "wms.coletas.inbox.dlq",
+      "destination_type": "queue",
+      "routing_key": "wms.coletas.inbox",
+      "arguments": {}
+    }
+  ]
+}

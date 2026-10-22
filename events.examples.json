@@ -1,0 +1,87 @@
+{
+  "MercadoriaRecebida": {
+    "event": "MercadoriaRecebida",
+    "version": 1,
+    "eventId": "7d1f9b3e-2c64-4a1d-9f10-5b0c3a8e4d21",
+    "timestamp": "2026-10-12T14:30:00Z",
+    "correlationId": "PED-100",
+    "source": "wms",
+    "cargoId": "CARGA-001",
+    "receiptId": "REC-001",
+    "invoiceNumber": "NF-12345",
+    "items": [
+      {
+        "productId": "SKU-0001",
+        "quantity": 100
+      }
+    ]
+  },
+  "ProdutoArmazenado": {
+    "event": "ProdutoArmazenado",
+    "version": 1,
+    "eventId": "7d1f9b3e-2c64-4a1d-9f10-5b0c3a8e4d21",
+    "timestamp": "2026-10-12T14:30:00Z",
+    "correlationId": "PED-100",
+    "source": "wms",
+    "productId": "SKU-0001",
+    "addressCode": "A-01-03-2",
+    "quantity": 100
+  },
+  "EstoqueAtualizado": {
+    "event": "EstoqueAtualizado",
+    "version": 1,
+    "eventId": "7d1f9b3e-2c64-4a1d-9f10-5b0c3a8e4d21",
+    "timestamp": "2026-10-12T14:30:00Z",
+    "correlationId": "PED-100",
+    "source": "wms",
+    "productId": "SKU-0001",
+    "addressCode": "A-01-03-2",
+    "delta": 100,
+    "balance": 100,
+    "reason": "ARMAZENAGEM"
+  },
+  "PickingCriado": {
+    "event": "PickingCriado",
+    "version": 1,
+    "eventId": "7d1f9b3e-2c64-4a1d-9f10-5b0c3a8e4d21",
+    "timestamp": "2026-10-12T14:30:00Z",
+    "correlationId": "PED-100",
+    "source": "wms",
+    "pickingId": "PCK-001",
+    "orderId": "PED-100"
+  },
+  "PedidoSeparado": {
+    "event": "PedidoSeparado",
+    "version": 1,
+    "eventId": "7d1f9b3e-2c64-4a1d-9f10-5b0c3a8e4d21",
+    "timestamp": "2026-10-12T14:30:00Z",
+    "correlationId": "PED-100",
+    "source": "wms",
+    "pickingId": "PCK-001",
+    "orderId": "PED-100"
+  },
+  "PedidoEmbalado": {
+    "event": "PedidoEmbalado",
+    "version": 1,
+    "eventId": "7d1f9b3e-2c64-4a1d-9f10-5b0c3a8e4d21",
+    "timestamp": "2026-10-12T14:30:00Z",
+    "correlationId": "PED-100",
+    "source": "wms",
+    "packingId": "PKG-001",
+    "orderId": "PED-100",
+    "volumes": 1
+  },
+  "CargaExpedida": {
+    "event": "CargaExpedida",
+    "version": 1,
+    "eventId": "7d1f9b3e-2c64-4a1d-9f10-5b0c3a8e4d21",
+    "timestamp": "2026-10-12T14:30:00Z",
+    "correlationId": "PED-100",
+    "source": "wms",
+    "shipmentId": "EXP-001",
+    "orderIds": [
+      "PED-100"
+    ],
+    "destination": "Recife - PE"
+  }
+}
