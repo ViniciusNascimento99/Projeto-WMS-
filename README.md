@@ -88,7 +88,7 @@ O serviço será organizado em camadas, seguindo DDD:
 - **Integração síncrona:** REST, conforme o contrato [`openapi.yaml`](./openapi.yaml).
 - **Integração assíncrona:** eventos via RabbitMQ, conforme [`events.schema.json`](./events.schema.json) e [`rabbitmq-definitions.json`](./rabbitmq-definitions.json).
 
-> A implementação (`src/`) ainda não foi iniciada. Hoje o repositório contém os **contratos** de API e de eventos.
+> As pastas de `src/` e `tests/` já foram criadas, mas ainda sem código. Hoje o repositório contém principalmente os **contratos** de API e de eventos.
 
 ## 5. Contrato da API
 
@@ -195,10 +195,20 @@ Projeto-WMS-/
 ├── events.schema.json          # schema dos eventos
 ├── events.examples.json        # exemplos de eventos
 ├── rabbitmq-definitions.json   # exchanges, filas e bindings
-└── testar_eventos.py           # valida os exemplos contra o schema
+├── testar_eventos.py           # valida os exemplos contra o schema
+├── src/                        # pastas criadas, ainda sem código
+│   ├── domain/
+│   ├── application/
+│   ├── infrastructure/
+│   ├── api/
+│   └── config/
+└── tests/                      # pastas criadas, ainda sem testes
+    ├── unit/
+    ├── integration/
+    └── contract/
 ```
 
-**Estrutura alvo** (padrão da plataforma SIG-Log): `LICENSE`, `Dockerfile`, `docker-compose.yml`, `.github/workflows/` (CI/CD), `docs/`, `src/` (`domain`, `application`, `infrastructure`, `api`, `config`), `tests/` (`unit`, `integration`, `contract`), `data/`, `scripts/` e `monitoring/` (Prometheus e Grafana).
+**Ainda a criar** (padrão da plataforma SIG-Log): `LICENSE`, `Dockerfile`, `docker-compose.yml`, `.github/workflows/` (CI/CD), `docs/`, `data/`, `scripts/` e `monitoring/` (Prometheus e Grafana).
 
 ## 9. Como executar
 
@@ -221,9 +231,9 @@ Saída esperada: os 7 eventos de exemplo aparecem como `OK` e o teste negativo (
 | Tipo | Situação |
 |---|---|
 | Contrato de eventos | `testar_eventos.py` valida os exemplos contra o schema e confirma que um evento inválido é rejeitado |
-| Unitários | Planejado (`tests/unit`) |
-| Integração (API + banco, API + RabbitMQ) | Planejado (`tests/integration`) |
-| Contrato entre módulos | Planejado (`tests/contract`) |
+| Unitários | Pasta `tests/unit` criada, sem testes ainda |
+| Integração (API + banco, API + RabbitMQ) | Pasta `tests/integration` criada, sem testes ainda |
+| Contrato entre módulos | Pasta `tests/contract` criada, sem testes ainda |
 
 ## 11. Status do projeto
 
@@ -231,8 +241,9 @@ Saída esperada: os 7 eventos de exemplo aparecem como `OK` e o teste negativo (
 - [x] Schema e exemplos de eventos
 - [x] Topologia do RabbitMQ (exchanges, filas, bindings e DLQs)
 - [x] Validação dos eventos (`testar_eventos.py`)
+- [x] Estrutura de pastas `src/` e `tests/` (ainda sem código)
 - [x] Documentação em `docs/` (visão, requisitos, personas, DDD, context map, ADRs...)
-- [ ] Código-fonte (`src/`)
+- [ ] Código-fonte (implementação em `src/`)
 - [ ] Dockerfile e Docker Compose
 - [ ] Pipeline CI/CD (GitHub Actions)
 - [ ] Testes automatizados (unitário, integração, contrato)
@@ -247,9 +258,9 @@ Repositório: [@ViniciusNascimento99](https://github.com/ViniciusNascimento99)
 
 | Nome |
 |---|---|
-| _ Vinicius Taiguara_ |
-| _ José Victor_ |
-| _ José Jackson_ |
+| Vinicius Taiguara |
+| José Victor | 
+| José Jackson | 
 
 ---
 
