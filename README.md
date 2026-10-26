@@ -172,7 +172,7 @@ Mensagens rejeitadas vão para o exchange `siglog.wms.dlx`, que as encaminha par
 
 | Área | Tecnologia | Situação |
 |---|---|---|
-| Linguagem / API | Python, FastAPI, Uvicorn | Dependências listadas em `requirements.txt` |
+| Linguagem / API | Python, FastAPI | Dependências listadas em `requirements.txt` |
 | Contratos | OpenAPI 3.0.3, JSON Schema 2020-12 | Em uso |
 | Mensageria | RabbitMQ | Topologia definida |
 | Banco de dados | PostgreSQL | Planejado |
