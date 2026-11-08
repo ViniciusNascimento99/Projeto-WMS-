@@ -1,0 +1,584 @@
+openapi: 3.0.3
+info:
+  title: SIG-Log WMS API
+  version: 1.0.0
+  description: Gestão de estoque e Centro de Distribuição (Squad 01).
+servers:
+  - url: http://localhost:8001/api/v1
+security:
+  - bearerAuth: []
+paths:
+  /products:
+    post:
+      summary: Cadastrar produto (RF01)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreate'
+            example:
+              sku: SKU-0001
+              description: Caixa de parafusos 100un
+              unit: CX
+      responses:
+        '201':
+          description: Produto criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /products/{id}:
+    get:
+      summary: Consultar produto
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Produto encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /addresses:
+    post:
+      summary: Criar endereço de armazenamento (UC03, RF02)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressCreate'
+            example:
+              code: A-01-03-2
+              aisle: A
+              shelf: '01'
+              level: 2
+              capacity: 500
+      responses:
+        '201':
+          description: Endereço criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /receipts:
+    post:
+      summary: Registrar recebimento de mercadoria (UC01, RF03)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReceiptCreate'
+            example:
+              cargoId: CARGA-001
+              invoiceNumber: NF-12345
+              items:
+                - productId: SKU-0001
+                  expectedQuantity: 100
+      responses:
+        '201':
+          description: Recebimento registrado com status AGUARDANDO
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Receipt'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /receipts/{id}/conference:
+    post:
+      summary: Conferir mercadoria recebida (UC02)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConferenceRequest'
+      responses:
+        '200':
+          description: Conferência concluída. Publica MercadoriaRecebida se não houver divergência
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Receipt'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /allocations:
+    post:
+      summary: Alocar produto em um endereço (UC04, RF05)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllocationCreate'
+      responses:
+        '201':
+          description: Produto armazenado. Publica ProdutoArmazenado e EstoqueAtualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItem'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /inventory:
+    get:
+      summary: Consultar estoque (UC05, RF09)
+      parameters:
+        - name: address
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Lista de saldos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InventoryItem'
+  /inventory/{product_id}:
+    get:
+      summary: Saldo de um produto por endereço
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Saldo do produto
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InventoryItem'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /inventory/{product_id}/movements:
+    get:
+      summary: Histórico de movimentações (RF10)
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Movimentações em ordem cronológica
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Movement'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /picking:
+    post:
+      summary: Gerar ordem de picking (UC06, RF06)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PickingCreate'
+            example:
+              orderId: PED-100
+              items:
+                - productId: SKU-0001
+                  quantity: 10
+      responses:
+        '201':
+          description: Ordem criada. Publica PickingCriado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PickingOrder'
+        '409':
+          description: Saldo insuficiente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /picking/{id}/pick:
+    post:
+      summary: Registrar separação de itens (UC07)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PickConfirm'
+      responses:
+        '200':
+          description: Item separado. Publica PedidoSeparado quando todos os itens estiverem separados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PickingOrder'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /packing:
+    post:
+      summary: Embalar pedido separado (UC08, RF07)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackingCreate'
+      responses:
+        '201':
+          description: Pedido embalado. Publica PedidoEmbalado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackingOrder'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /shipments:
+    post:
+      summary: Expedir carga (UC09, RF08)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShipmentCreate'
+            example:
+              orderIds:
+                - PED-100
+              destination: Recife - PE
+      responses:
+        '201':
+          description: Carga expedida. Publica CargaExpedida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /shipments/{id}:
+    get:
+      summary: Consultar expedição
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Expedição encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shipment'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    BadRequest:
+      description: Requisição inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Conflito com o estado atual
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: INSUFFICIENT_STOCK
+        message:
+          type: string
+    ProductCreate:
+      type: object
+      required: [sku, description, unit]
+      properties:
+        sku:
+          type: string
+        description:
+          type: string
+        unit:
+          type: string
+    Product:
+      allOf:
+        - $ref: '#/components/schemas/ProductCreate'
+        - type: object
+          properties:
+            id:
+              type: string
+    AddressCreate:
+      type: object
+      required: [code, capacity]
+      properties:
+        code:
+          type: string
+        aisle:
+          type: string
+        shelf:
+          type: string
+        level:
+          type: integer
+        capacity:
+          type: integer
+    Address:
+      allOf:
+        - $ref: '#/components/schemas/AddressCreate'
+        - type: object
+          properties:
+            active:
+              type: boolean
+    ReceiptItem:
+      type: object
+      required: [productId, expectedQuantity]
+      properties:
+        productId:
+          type: string
+        expectedQuantity:
+          type: integer
+        countedQuantity:
+          type: integer
+    ReceiptCreate:
+      type: object
+      required: [cargoId, items]
+      properties:
+        cargoId:
+          type: string
+        invoiceNumber:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReceiptItem'
+    Receipt:
+      type: object
+      properties:
+        id:
+          type: string
+        cargoId:
+          type: string
+        status:
+          type: string
+          enum: [AGUARDANDO, EM_CONFERENCIA, CONFERIDA, COM_DIVERGENCIA, ARMAZENADA]
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReceiptItem'
+    ConferenceRequest:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [productId, countedQuantity]
+            properties:
+              productId:
+                type: string
+              countedQuantity:
+                type: integer
+    AllocationCreate:
+      type: object
+      required: [productId, addressCode, quantity]
+      properties:
+        productId:
+          type: string
+        addressCode:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+    InventoryItem:
+      type: object
+      properties:
+        productId:
+          type: string
+        addressCode:
+          type: string
+        quantity:
+          type: integer
+    Movement:
+      type: object
+      properties:
+        id:
+          type: string
+        productId:
+          type: string
+        type:
+          type: string
+          enum: [ENTRADA, SAIDA, AJUSTE]
+        quantity:
+          type: integer
+        addressCode:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    PickingCreate:
+      type: object
+      required: [orderId, items]
+      properties:
+        orderId:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            required: [productId, quantity]
+            properties:
+              productId:
+                type: string
+              quantity:
+                type: integer
+    PickingOrder:
+      type: object
+      properties:
+        id:
+          type: string
+        orderId:
+          type: string
+        status:
+          type: string
+          enum: [CRIADA, EM_SEPARACAO, SEPARADA, CANCELADA]
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              productId:
+                type: string
+              addressCode:
+                type: string
+              quantity:
+                type: integer
+              picked:
+                type: boolean
+    PickConfirm:
+      type: object
+      required: [productId, quantity]
+      properties:
+        productId:
+          type: string
+        quantity:
+          type: integer
+    PackingCreate:
+      type: object
+      required: [orderId]
+      properties:
+        orderId:
+          type: string
+        volumes:
+          type: integer
+          default: 1
+    PackingOrder:
+      type: object
+      properties:
+        id:
+          type: string
+        orderId:
+          type: string
+        volumes:
+          type: integer
+        status:
+          type: string
+          enum: [CRIADA, EM_EMBALAGEM, EMBALADA]
+    ShipmentCreate:
+      type: object
+      required: [orderIds, destination]
+      properties:
+        orderIds:
+          type: array
+          items:
+            type: string
+        destination:
+          type: string
+    Shipment:
+      type: object
+      properties:
+        shipmentId:
+          type: string
+          example: EXP-001
+        orderIds:
+          type: array
+          items:
+            type: string
+        destination:
+          type: string
+        status:
+          type: string
+          enum: [PLANEJADA, EXPEDIDA]
+        shippedAt:
+          type: string
+          format: date-time
