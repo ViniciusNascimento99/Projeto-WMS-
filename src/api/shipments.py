@@ -1,44 +1,17 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from uuid import uuid4
+from fastapi import APIRouter, Depends
 
+from src.api import schemas
+from src.application.services import WmsService
+from src.config.container import get_service
 
 router = APIRouter(prefix="/shipments", tags=["Shipments"])
 
 
-class ShipmentCreate(BaseModel):
-    orderIds: list[str]
-    destination: str
+@router.post("", status_code=201, response_model=schemas.Shipment)
+def create_shipment(body: schemas.ShipmentCreate, svc: WmsService = Depends(get_service)):
+    return svc.create_shipment(body.orderIds, body.destination)
 
 
-shipments = {}
-
-
-# Criar expedição
-@router.post("", status_code=201)
-def create_shipment(shipment: ShipmentCreate):
-
-    new_shipment = {
-        "shipmentId": str(uuid4()),
-        "orderIds": shipment.orderIds,
-        "destination": shipment.destination,
-        "status": "PLANEJADA",
-        "shippedAt": None
-    }
-
-    shipments[new_shipment["shipmentId"]] = new_shipment
-
-    return new_shipment
-
-
-# Consultar expedição
-@router.get("/{id}")
-def get_shipment(id: str):
-
-    if id not in shipments:
-        raise HTTPException(
-            status_code=404,
-            detail="Shipment not found"
-        )
-
-    return shipments[id]
+@router.get("/{id}", response_model=schemas.Shipment)
+def get_shipment(id: str, svc: WmsService = Depends(get_service)):
+    return svc.get_shipment(id)

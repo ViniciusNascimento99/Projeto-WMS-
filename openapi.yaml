@@ -4,9 +4,9 @@ info:
   version: 1.0.0
   description: Gestão de estoque e Centro de Distribuição (Squad 01).
 servers:
-  - url: http://localhost:8001/api/v1
+- url: http://localhost:8001/api/v1
 security:
-  - bearerAuth: []
+- bearerAuth: []
 paths:
   /products:
     post:
@@ -28,19 +28,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Product'
-        '400':
-          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
         '409':
           $ref: '#/components/responses/Conflict'
   /products/{id}:
     get:
       summary: Consultar produto
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: Produto encontrado
@@ -72,8 +72,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Address'
-        '400':
-          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
         '409':
           $ref: '#/components/responses/Conflict'
   /receipts:
@@ -89,8 +89,8 @@ paths:
               cargoId: CARGA-001
               invoiceNumber: NF-12345
               items:
-                - productId: SKU-0001
-                  expectedQuantity: 100
+              - productId: SKU-0001
+                expectedQuantity: 100
       responses:
         '201':
           description: Recebimento registrado com status AGUARDANDO
@@ -98,19 +98,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Receipt'
-        '400':
-          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
         '404':
           $ref: '#/components/responses/NotFound'
   /receipts/{id}/conference:
     post:
       summary: Conferir mercadoria recebida (UC02)
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
       requestBody:
         required: true
         content:
@@ -128,6 +128,8 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+        '422': &id001
+          $ref: '#/components/responses/ValidationError'
   /allocations:
     post:
       summary: Alocar produto em um endereço (UC04, RF05)
@@ -148,24 +150,27 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+        '422': *id001
   /inventory:
     get:
       summary: Consultar estoque (UC05, RF09)
       parameters:
-        - name: address
-          in: query
-          schema:
-            type: string
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
-        - name: size
-          in: query
-          schema:
-            type: integer
-            default: 20
+      - name: address
+        in: query
+        schema:
+          type: string
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - name: size
+        in: query
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
       responses:
         '200':
           description: Lista de saldos
@@ -175,15 +180,16 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/InventoryItem'
+        '422': *id001
   /inventory/{product_id}:
     get:
       summary: Saldo de um produto por endereço
       parameters:
-        - name: product_id
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: Saldo do produto
@@ -199,11 +205,11 @@ paths:
     get:
       summary: Histórico de movimentações (RF10)
       parameters:
-        - name: product_id
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: Movimentações em ordem cronológica
@@ -227,8 +233,8 @@ paths:
             example:
               orderId: PED-100
               items:
-                - productId: SKU-0001
-                  quantity: 10
+              - productId: SKU-0001
+                quantity: 10
       responses:
         '201':
           description: Ordem criada. Publica PickingCriado
@@ -242,15 +248,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '422': *id001
   /picking/{id}/pick:
     post:
       summary: Registrar separação de itens (UC07)
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
       requestBody:
         required: true
         content:
@@ -268,6 +275,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+        '422': *id001
   /packing:
     post:
       summary: Embalar pedido separado (UC08, RF07)
@@ -286,6 +294,7 @@ paths:
                 $ref: '#/components/schemas/PackingOrder'
         '409':
           $ref: '#/components/responses/Conflict'
+        '422': *id001
   /shipments:
     post:
       summary: Expedir carga (UC09, RF08)
@@ -297,7 +306,7 @@ paths:
               $ref: '#/components/schemas/ShipmentCreate'
             example:
               orderIds:
-                - PED-100
+              - PED-100
               destination: Recife - PE
       responses:
         '201':
@@ -308,15 +317,16 @@ paths:
                 $ref: '#/components/schemas/Shipment'
         '409':
           $ref: '#/components/responses/Conflict'
+        '422': *id001
   /shipments/{id}:
     get:
       summary: Consultar expedição
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: Expedição encontrada
@@ -333,8 +343,8 @@ components:
       scheme: bearer
       bearerFormat: JWT
   responses:
-    BadRequest:
-      description: Requisição inválida
+    ValidationError:
+      description: Dados da requisição inválidos
       content:
         application/json:
           schema:
@@ -354,7 +364,9 @@ components:
   schemas:
     Error:
       type: object
-      required: [code, message]
+      required:
+      - code
+      - message
       properties:
         code:
           type: string
@@ -363,27 +375,36 @@ components:
           type: string
     ProductCreate:
       type: object
-      required: [sku, description, unit]
+      required:
+      - sku
+      - description
+      - unit
       properties:
         sku:
           type: string
+          minLength: 1
         description:
           type: string
+          minLength: 1
         unit:
           type: string
+          minLength: 1
     Product:
       allOf:
-        - $ref: '#/components/schemas/ProductCreate'
-        - type: object
-          properties:
-            id:
-              type: string
+      - $ref: '#/components/schemas/ProductCreate'
+      - type: object
+        properties:
+          id:
+            type: string
     AddressCreate:
       type: object
-      required: [code, capacity]
+      required:
+      - code
+      - capacity
       properties:
         code:
           type: string
+          minLength: 1
         aisle:
           type: string
         shelf:
@@ -392,35 +413,44 @@ components:
           type: integer
         capacity:
           type: integer
+          minimum: 1
     Address:
       allOf:
-        - $ref: '#/components/schemas/AddressCreate'
-        - type: object
-          properties:
-            active:
-              type: boolean
+      - $ref: '#/components/schemas/AddressCreate'
+      - type: object
+        properties:
+          active:
+            type: boolean
     ReceiptItem:
       type: object
-      required: [productId, expectedQuantity]
+      required:
+      - productId
+      - expectedQuantity
       properties:
         productId:
           type: string
         expectedQuantity:
           type: integer
+          minimum: 1
         countedQuantity:
           type: integer
+          minimum: 0
     ReceiptCreate:
       type: object
-      required: [cargoId, items]
+      required:
+      - cargoId
+      - items
       properties:
         cargoId:
           type: string
+          minLength: 1
         invoiceNumber:
           type: string
         items:
           type: array
           items:
             $ref: '#/components/schemas/ReceiptItem'
+          minItems: 1
     Receipt:
       type: object
       properties:
@@ -430,33 +460,49 @@ components:
           type: string
         status:
           type: string
-          enum: [AGUARDANDO, EM_CONFERENCIA, CONFERIDA, COM_DIVERGENCIA, ARMAZENADA]
+          enum:
+          - AGUARDANDO
+          - EM_CONFERENCIA
+          - CONFERIDA
+          - COM_DIVERGENCIA
+          - ARMAZENADA
         items:
           type: array
           items:
             $ref: '#/components/schemas/ReceiptItem'
     ConferenceRequest:
       type: object
-      required: [items]
+      required:
+      - items
       properties:
         items:
           type: array
           items:
             type: object
-            required: [productId, countedQuantity]
+            required:
+            - productId
+            - countedQuantity
             properties:
               productId:
                 type: string
+                minLength: 1
               countedQuantity:
                 type: integer
+                minimum: 0
+          minItems: 1
     AllocationCreate:
       type: object
-      required: [productId, addressCode, quantity]
+      required:
+      - productId
+      - addressCode
+      - quantity
       properties:
         productId:
           type: string
+          minLength: 1
         addressCode:
           type: string
+          minLength: 1
         quantity:
           type: integer
           minimum: 1
@@ -478,7 +524,10 @@ components:
           type: string
         type:
           type: string
-          enum: [ENTRADA, SAIDA, AJUSTE]
+          enum:
+          - ENTRADA
+          - SAIDA
+          - AJUSTE
         quantity:
           type: integer
         addressCode:
@@ -488,20 +537,28 @@ components:
           format: date-time
     PickingCreate:
       type: object
-      required: [orderId, items]
+      required:
+      - orderId
+      - items
       properties:
         orderId:
           type: string
+          minLength: 1
         items:
           type: array
           items:
             type: object
-            required: [productId, quantity]
+            required:
+            - productId
+            - quantity
             properties:
               productId:
                 type: string
+                minLength: 1
               quantity:
                 type: integer
+                minimum: 1
+          minItems: 1
     PickingOrder:
       type: object
       properties:
@@ -511,7 +568,11 @@ components:
           type: string
         status:
           type: string
-          enum: [CRIADA, EM_SEPARACAO, SEPARADA, CANCELADA]
+          enum:
+          - CRIADA
+          - EM_SEPARACAO
+          - SEPARADA
+          - CANCELADA
         items:
           type: array
           items:
@@ -527,21 +588,28 @@ components:
                 type: boolean
     PickConfirm:
       type: object
-      required: [productId, quantity]
+      required:
+      - productId
+      - quantity
       properties:
         productId:
           type: string
+          minLength: 1
         quantity:
           type: integer
+          minimum: 1
     PackingCreate:
       type: object
-      required: [orderId]
+      required:
+      - orderId
       properties:
         orderId:
           type: string
+          minLength: 1
         volumes:
           type: integer
           default: 1
+          minimum: 1
     PackingOrder:
       type: object
       properties:
@@ -553,17 +621,24 @@ components:
           type: integer
         status:
           type: string
-          enum: [CRIADA, EM_EMBALAGEM, EMBALADA]
+          enum:
+          - CRIADA
+          - EM_EMBALAGEM
+          - EMBALADA
     ShipmentCreate:
       type: object
-      required: [orderIds, destination]
+      required:
+      - orderIds
+      - destination
       properties:
         orderIds:
           type: array
           items:
             type: string
+          minItems: 1
         destination:
           type: string
+          minLength: 1
     Shipment:
       type: object
       properties:
@@ -578,7 +653,9 @@ components:
           type: string
         status:
           type: string
-          enum: [PLANEJADA, EXPEDIDA]
+          enum:
+          - PLANEJADA
+          - EXPEDIDA
         shippedAt:
           type: string
           format: date-time
