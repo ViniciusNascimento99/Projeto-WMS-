@@ -1,67 +1,27 @@
+from fastapi import APIRouter, Depends, Query
 
-from fastapi import APIRouter, Query, HTTPException
-
-from src.api.allocations import allocations, movements
-
+from src.api import schemas
+from src.application.services import WmsService
+from src.config.container import get_service
 
 router = APIRouter(prefix="/inventory", tags=["Inventory"])
 
 
-# Consultar estoque geral
-@router.get("")
+@router.get("", response_model=list[schemas.InventoryItem])
 def get_inventory(
     address: str | None = None,
     page: int = Query(default=1, ge=1),
-    size: int = Query(default=20, ge=1)
+    size: int = Query(default=20, ge=1),
+    svc: WmsService = Depends(get_service),
 ):
-    inventory = allocations.copy()
-
-    if address:
-        inventory = [
-            item for item in inventory
-            if item["addressCode"] == address
-        ]
-
-    start = (page - 1) * size
-    end = start + size
-
-    return inventory[start:end]
+    return svc.get_inventory(address, page, size)
 
 
-# Consultar saldo de um produto por endereço
-@router.get("/{product_id}")
-def get_product_inventory(product_id: str):
-
-    product_inventory = [
-        item for item in allocations
-        if item["productId"] == product_id
-    ]
-
-    if not product_inventory:
-        raise HTTPException(
-            status_code=404,
-            detail="Product inventory not found"
-        )
-
-    return product_inventory
+@router.get("/{product_id}", response_model=list[schemas.InventoryItem])
+def get_product_inventory(product_id: str, svc: WmsService = Depends(get_service)):
+    return svc.get_product_inventory(product_id)
 
 
-# Consultar histórico de movimentações
-@router.get("/{product_id}/movements")
-def get_product_movements(product_id: str):
-
-    product_movements = [
-        movement for movement in movements
-        if movement["productId"] == product_id
-    ]
-
-    if not product_movements:
-        raise HTTPException(
-            status_code=404,
-            detail="Product movements not found"
-        )
-
-    return sorted(
-        product_movements,
-        key=lambda movement: movement["timestamp"]
-    )
+@router.get("/{product_id}/movements", response_model=list[schemas.Movement])
+def get_product_movements(product_id: str, svc: WmsService = Depends(get_service)):
+    return svc.get_product_movements(product_id)
