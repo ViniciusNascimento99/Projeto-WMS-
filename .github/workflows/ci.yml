@@ -1,3 +1,4 @@
+
 name: CI - SIG-Log WMS
 
 on:
@@ -5,10 +6,12 @@ on:
     branches:
       - main
       - feature/docker
+      - feature/conexao-neon
   pull_request:
     branches:
       - main
       - feature/docker
+      - feature/conexao-neon
 
 jobs:
   tests:
