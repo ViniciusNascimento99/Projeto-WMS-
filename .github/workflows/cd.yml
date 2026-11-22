@@ -5,9 +5,11 @@ on:
     branches:
       - main
       - feature/docker
+      - feature/conexao-neon
   pull_request:
     branches:
       - main
+      - feature/conexao-neon
 
 permissions:
   contents: read
