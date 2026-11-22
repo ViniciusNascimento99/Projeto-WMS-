@@ -69,15 +69,18 @@ def _shipment_dto(s: Shipment) -> dict:
 
 
 class WmsService:
-    def __init__(self, store, publisher):
+    def __init__(self, store, publisher, product_repository=None):
         self.store = store
         self.publisher = publisher
+        self.product_repository = product_repository
 
     def _emit(self, name: str, correlation_id: str, **fields) -> None:
         self.publisher.publish(make_event(name, correlation_id, **fields))
-
     # ----------------------------------------------------------- Produtos
     def create_product(self, sku: str, description: str, unit: str) -> dict:
+        if self.product_repository is not None:
+            return self.product_repository.create(sku, description, unit)
+
         if self.store.has_sku(sku):
             raise DomainError("SKU_ALREADY_EXISTS", f"Product SKU {sku} already exists")
         product = Product(id=str(uuid4()), sku=sku, description=description, unit=unit)
@@ -85,6 +88,12 @@ class WmsService:
         return asdict(product)
 
     def get_product(self, product_id: str) -> dict:
+        if self.product_repository is not None:
+            product = self.product_repository.get_by_id(product_id)
+            if product is None:
+                raise not_found("PRODUCT_NOT_FOUND", "Product not found")
+            return product
+
         product = self.store.products.get(product_id)
         if product is None:
             raise not_found("PRODUCT_NOT_FOUND", "Product not found")
