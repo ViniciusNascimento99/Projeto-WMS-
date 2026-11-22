@@ -1,0 +1,86 @@
+
+# Ambiente local do SIG-Log WMS: API + RabbitMQ (+ PostgreSQL opcional).
+# Subir:   docker compose up --build
+# Com banco: docker compose --profile db up --build
+# Parar:   docker compose down        (apaga os containers, mantém os dados)
+# Zerar:   docker compose down -v     (apaga também os dados do banco e das filas)
+name: siglog-wms
+
+services:
+  api:
+    build: .
+    ports:
+      - "8001:8000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-wms}:${POSTGRES_PASSWORD:-wms_dev}@postgres:5432/${POSTGRES_DB:-wms}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER:-wms}:${RABBITMQ_PASSWORD:-wms_dev}@rabbitmq:5672/
+    depends_on:
+      rabbitmq-setup:
+        condition: service_completed_successfully
+
+  # DESLIGADO por padrão. Para ligar: docker compose --profile db up
+  postgres:
+    image: postgres:16-alpine
+    profiles: ["db"]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-wms}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wms_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-wms}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-wms}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-wms_dev}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitdata:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Importa exchanges, filas e bindings após o RabbitMQ estar disponível.
+  rabbitmq-setup:
+    image: curlimages/curl:8.10.1
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_USER: ${RABBITMQ_USER:-wms}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-wms_dev}
+    volumes:
+      - ./rabbitmq-definitions.json:/definitions.json:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        for i in $(seq 1 10); do
+          if curl -sSf -u "$${RABBITMQ_USER}:$${RABBITMQ_PASSWORD}" \
+            -H "content-type: application/json" \
+            -X POST http://rabbitmq:15672/api/definitions \
+            -d @/definitions.json; then
+            echo "Definicoes do RabbitMQ importadas com sucesso"
+            exit 0
+          fi
+          echo "RabbitMQ ainda nao esta pronto. Tentativa $$i/10"
+          sleep 5
+        done
+        echo "Falha ao importar definicoes do RabbitMQ"
+        exit 1
+    restart: "no"
+
+volumes:
+  pgdata:
+  rabbitdata:
