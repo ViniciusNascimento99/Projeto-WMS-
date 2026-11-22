@@ -1,7 +1,10 @@
-from fastapi import FastAPI, Request
+
+from fastapi import FastAPI, Request, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
+
+from src.config.security import require_auth
 
 from src.api.addresses import router as addresses_router
 from src.api.allocations import router as allocations_router
@@ -20,10 +23,13 @@ app = FastAPI(
 )
 
 
-# Erros no formato do contrato: {"code": "...", "message": "..."}
+# Erros no formato do contrato
 @app.exception_handler(DomainError)
 async def domain_error_handler(request: Request, exc: DomainError):
-    return JSONResponse(status_code=exc.status, content={"code": exc.code, "message": exc.message})
+    return JSONResponse(
+        status_code=exc.status,
+        content={"code": exc.code, "message": exc.message},
+    )
 
 
 @app.exception_handler(RequestValidationError)
@@ -32,7 +38,10 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
     where = ".".join(str(part) for part in first["loc"] if part != "body")
     return JSONResponse(
         status_code=422,
-        content={"code": "VALIDATION_ERROR", "message": f"{where}: {first['msg']}"},
+        content={
+            "code": "VALIDATION_ERROR",
+            "message": f"{where}: {first['msg']}",
+        },
     )
 
 
@@ -40,8 +49,24 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
 async def http_error_handler(request: Request, exc: StarletteHTTPException):
     # JSON malformado chega como 400; o contrato trata como erro de validação (422)
     if exc.status_code == 400:
-        return JSONResponse(status_code=422, content={"code": "VALIDATION_ERROR", "message": "Invalid request body"})
-    return JSONResponse(status_code=exc.status_code, content={"code": "HTTP_ERROR", "message": str(exc.detail)})
+        return JSONResponse(
+            status_code=422,
+            content={
+                "code": "VALIDATION_ERROR",
+                "message": "Invalid request body",
+            },
+        )
+
+    code = "UNAUTHORIZED" if exc.status_code == 401 else "HTTP_ERROR"
+
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "code": code,
+            "message": str(exc.detail),
+        },
+        headers=exc.headers,
+    )
 
 
 @app.get("/")
@@ -54,9 +79,19 @@ def verificar_saude():
     return {"status": "healthy"}
 
 
-# Rotas da API versão 1
+# Rotas da API versão 1 protegidas por autenticação JWT
 for router in (
-    products_router, addresses_router, receipts_router, allocations_router,
-    inventory_router, picking_router, packing_router, shipments_router,
+    products_router,
+    addresses_router,
+    receipts_router,
+    allocations_router,
+    inventory_router,
+    picking_router,
+    packing_router,
+    shipments_router,
 ):
-    app.include_router(router, prefix="/api/v1")
+    app.include_router(
+        router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_auth)],
+    )
