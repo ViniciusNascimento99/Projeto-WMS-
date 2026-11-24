@@ -1,9 +1,5 @@
 
-# Ambiente local do SIG-Log WMS: API + RabbitMQ (+ PostgreSQL opcional).
-# Subir:   docker compose up --build
-# Com banco: docker compose --profile db up --build
-# Parar:   docker compose down        (apaga os containers, mantém os dados)
-# Zerar:   docker compose down -v     (apaga também os dados do banco e das filas)
+# Ambiente local do SIG-Log WMS: API + RabbitMQ + Front-end (+ PostgreSQL opcional).
 
 name: siglog-wms
 
@@ -20,7 +16,15 @@ services:
       rabbitmq-setup:
         condition: service_completed_successfully
 
-  # DESLIGADO por padrão. Para ligar: docker compose --profile db up
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # PostgreSQL opcional
   postgres:
     image: postgres:16-alpine
     profiles: ["db"]
@@ -54,7 +58,6 @@ services:
       timeout: 5s
       retries: 10
 
-  # Importa exchanges, filas e bindings após o RabbitMQ estar disponível.
   rabbitmq-setup:
     image: curlimages/curl:8.10.1
     depends_on:
