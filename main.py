@@ -1,6 +1,6 @@
-
 from fastapi import FastAPI, Request, Depends
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware  # NOVO
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -20,6 +20,14 @@ app = FastAPI(
     title="SIG-Log WMS",
     description="API de Gestão de Estoque e Centro de Distribuição",
     version="1.0.0",
+)
+
+# NOVO: permite que o front-end (http://localhost:8080) chame a API
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

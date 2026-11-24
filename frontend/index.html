@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#10243b"><title>SIG-Log WMS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div id="login-screen" class="login-screen">
+  <section class="login-visual"><div class="brand brand-light"><span class="brand-mark">SIG</span><span><b>SIG-Log WMS</b><small>GESTÃO LOGÍSTICA</small></span></div><div class="login-copy"><span class="eyebrow">GESTÃO INTELIGENTE DE ARMAZÉNS</span><h1>Sua operação conectada.<br>Do recebimento à expedição.</h1><p>Precisão, rastreabilidade e controle para cada etapa da sua cadeia logística.</p></div><div class="visual-foot">SIG-Log WMS · Plataforma de gestão logística</div></section>
+  <section class="login-panel"><div class="login-form-wrap"><div class="login-symbol">↗</div><h2>Bem-vindo ao SIG-Log</h2><p class="muted">Informe seu token de acesso para iniciar a operação.</p><form id="login-form"><label for="api-token">Token de acesso (JWT)</label><textarea id="api-token" rows="5" placeholder="Cole aqui o token Bearer JWT" required></textarea><label for="api-base">Endereço da API</label><input id="api-base" value="/api/v1" required><button class="btn primary full" type="submit">Entrar <span>→</span></button></form><p class="login-note">A API atual utiliza autenticação JWT. O projeto ainda não possui endpoint de login por e-mail e senha.</p><div id="login-error" class="error-text"></div></div></section>
+</div>
+<div id="app" class="app-shell hidden">
+  <aside class="sidebar"><div class="brand"><span class="brand-mark">SIG</span><span><b>SIG-Log WMS</b><small>GESTÃO LOGÍSTICA</small></span></div><div class="side-label">OPERAÇÃO</div>
+    <nav id="nav"><button class="nav-item active" data-page="overview"><span>▦</span>Visão geral</button><button class="nav-item" data-page="inventory"><span>⬡</span>Estoque</button><button class="nav-item" data-page="receipts"><span>⇩</span>Recebimento</button><button class="nav-item" data-page="addresses"><span>▤</span>Armazenagem</button><button class="nav-item" data-page="picking"><span>☷</span>Pedidos e separação</button><button class="nav-item" data-page="shipments"><span>▱</span>Expedição</button><button class="nav-item" data-page="products"><span>◇</span>Produtos</button></nav>
+    <div class="shift-card"><small>TURNO EM ANDAMENTO</small><b>Operação SIG-Log</b><span><i></i> API conectada quando autenticada</span></div><div class="side-bottom">ⓘ Central de ajuda<br><small>SIG-Log WMS · versão 1.0.0</small></div>
+  </aside>
+  <main class="main-area"><header class="topbar"><div class="warehouse"><span class="warehouse-icon">▦</span><span><small>UNIDADE / CENTRO DE DISTRIBUIÇÃO</small><b>CD Principal</b></span></div><div class="top-actions"><div class="search-global">⌕ <input id="global-search" placeholder="Buscar no SIG-Log..."></div><button class="icon-btn" title="Notificações">♧</button><div class="user-chip"><span class="avatar">OP</span><span><b>Operador</b><small>Usuário autenticado</small></span></div><button id="logout" class="icon-btn" title="Sair">↪</button></div></header>
+    <section class="content"><div id="page-content"></div></section>
+  </main>
+</div>
+<div id="toast" class="toast"></div>
+<script src="/app.js" defer></script>
+</body></html>
