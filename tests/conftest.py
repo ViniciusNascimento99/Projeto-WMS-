@@ -1,4 +1,7 @@
+import os
+import jwt
 import pytest
+from datetime import datetime, timedelta, timezone
 from fastapi.testclient import TestClient
 
 from main import app
@@ -15,8 +18,24 @@ def estado_limpo():
 
 
 @pytest.fixture
-def client():
-    return TestClient(app)
+def client(monkeypatch):
+    secret = "chave-de-teste-siglog-wms-32-bytes-minimo"
+    monkeypatch.setenv("JWT_SECRET", secret)
+
+    token = jwt.encode(
+        {
+            "sub": "usuario-teste",
+            "empresa_id": "empresa-teste",
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=30),
+        },
+        secret,
+        algorithm="HS256",
+    )
+
+    return TestClient(
+        app,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
 
 @pytest.fixture
