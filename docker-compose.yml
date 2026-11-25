@@ -12,15 +12,15 @@ services:
     ports:
       - "8001:8000"
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-wms}:${POSTGRES_PASSWORD:-wms_dev}@postgres:5432/${POSTGRES_DB:-wms}
-      RABBITMQ_URL: amqp://${RABBITMQ_USER:-wms}:${RABBITMQ_PASSWORD:-wms_dev}@rabbitmq:5672/
+      DATABASE_URL: "${DATABASE_URL:?Configure DATABASE_URL no arquivo .env}"
+      RABBITMQ_URL: "amqp://${RABBITMQ_USER:-wms}:${RABBITMQ_PASSWORD:-wms_dev}@rabbitmq:5672/"
     depends_on:
       rabbitmq-setup:
         condition: service_completed_successfully
 
   # DESLIGADO por padrão. Para ligar: docker compose --profile db up
   postgres:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     profiles: ["db"]
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-wms}
@@ -29,7 +29,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata18:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -83,4 +83,5 @@ services:
 
 volumes:
   pgdata:
+  pgdata18:
   rabbitdata:

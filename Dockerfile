@@ -13,6 +13,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 2) código da aplicação
 COPY main.py .
 COPY src ./src
+COPY alembic.ini .
+COPY migrations ./migrations
 
 # usuário sem privilégios (boa prática de segurança)
 RUN useradd --create-home appuser
