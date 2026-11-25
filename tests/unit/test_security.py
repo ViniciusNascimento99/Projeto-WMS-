@@ -1,6 +1,6 @@
 import jwt
+import pytest
 from datetime import datetime, timedelta, timezone
-
 from fastapi.testclient import TestClient
 
 from main import app
@@ -10,13 +10,9 @@ SECRET = "chave-de-teste-siglog-wms-32-bytes-minimo"
 ROTA = "/api/v1/products/produto-inexistente"
 
 
-import pytest
-
-
 @pytest.fixture(autouse=True)
 def configurar_jwt_secret(monkeypatch):
     monkeypatch.setenv("JWT_SECRET", SECRET)
-
 
 
 def gerar_token(claims=None, secret=SECRET):
@@ -28,6 +24,11 @@ def gerar_token(claims=None, secret=SECRET):
         }
 
     return jwt.encode(claims, secret, algorithm="HS256")
+
+
+def test_rota_publica_health():
+    response = TestClient(app).get("/health")
+    assert response.status_code == 200
 
 
 def test_rota_protegida_sem_token():

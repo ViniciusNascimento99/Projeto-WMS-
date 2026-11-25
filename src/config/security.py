@@ -41,7 +41,10 @@ def require_auth(
         if not isinstance(payload.get("sub"), str) or not payload["sub"].strip():
             raise jwt.InvalidTokenError("Identificador de usuário inválido")
 
-        if not isinstance(payload.get("empresa_id"), str) or not payload["empresa_id"].strip():
+        if (
+            not isinstance(payload.get("empresa_id"), str)
+            or not payload["empresa_id"].strip()
+        ):
             raise jwt.InvalidTokenError("Identificador de empresa inválido")
 
         return payload

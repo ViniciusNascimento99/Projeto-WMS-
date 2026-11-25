@@ -1,9 +1,5 @@
+# Ambiente local do SIG-Log WMS: API + RabbitMQ + Front-end (+ PostgreSQL opcional).
 
-# Ambiente local do SIG-Log WMS: API + RabbitMQ (+ PostgreSQL opcional).
-# Subir:   docker compose up --build
-# Com banco: docker compose --profile db up --build
-# Parar:   docker compose down        (apaga os containers, mantém os dados)
-# Zerar:   docker compose down -v     (apaga também os dados do banco e das filas)
 name: siglog-wms
 
 services:
@@ -12,13 +8,22 @@ services:
     ports:
       - "8001:8000"
     environment:
-      DATABASE_URL: "${DATABASE_URL:?Configure DATABASE_URL no arquivo .env}"
+      DATABASE_URL: "${DATABASE_URL:?Configure DATABASE_URL no arquivo .env.docker}"
       RABBITMQ_URL: "amqp://${RABBITMQ_USER:-wms}:${RABBITMQ_PASSWORD:-wms_dev}@rabbitmq:5672/"
+      JWT_SECRET: "${JWT_SECRET:-}"
     depends_on:
       rabbitmq-setup:
         condition: service_completed_successfully
 
-  # DESLIGADO por padrão. Para ligar: docker compose --profile db up
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # PostgreSQL opcional
   postgres:
     image: postgres:18-alpine
     profiles: ["db"]
@@ -66,7 +71,7 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        for i in $(seq 1 10); do
+        for i in $$(seq 1 10); do
           if curl -sSf -u "$${RABBITMQ_USER}:$${RABBITMQ_PASSWORD}" \
             -H "content-type: application/json" \
             -X POST http://rabbitmq:15672/api/definitions \
