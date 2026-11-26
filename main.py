@@ -7,6 +7,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from src.config.security import require_auth
 
 from src.api.addresses import router as addresses_router
+from src.api.auth import router as auth_router
 from src.api.allocations import router as allocations_router
 from src.api.inventory import router as inventory_router
 from src.api.packing import router as packing_router
@@ -101,3 +102,7 @@ for router in (
         prefix="/api/v1",
         dependencies=[Depends(require_auth)],
     )
+
+
+# Login público (emite o JWT usado pelas rotas acima)
+app.include_router(auth_router, prefix="/api/v1")
