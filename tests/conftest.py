@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 
 from main import app
 from src.config import container
+from src.config.request_context import RequestContext, get_request_context
 
 API = "/api/v1"
 
@@ -35,10 +36,20 @@ def token_teste(monkeypatch):
 
 @pytest.fixture
 def client(token_teste):
-    return TestClient(
-        app,
-        headers={"Authorization": f"Bearer {token_teste}"},
+    app.dependency_overrides[get_request_context] = lambda: RequestContext(
+        usuario_id="66666666-6666-4666-8666-666666666666",
+        empresa_id="11111111-1111-4111-8111-111111111111",
+        perfil_id="33333333-3333-4333-8333-333333333333",
     )
+
+    try:
+        with TestClient(
+            app,
+            headers={"Authorization": f"Bearer {token_teste}"},
+        ) as test_client:
+            yield test_client
+    finally:
+        app.dependency_overrides.pop(get_request_context, None)
 
 
 @pytest.fixture

@@ -1,5 +1,3 @@
-"""Repositório PostgreSQL de produtos."""
-
 import psycopg
 
 from src.domain.errors import DomainError
@@ -8,16 +6,23 @@ from src.infrastructure.postgres.connection import get_connection
 
 class PostgresProductRepository:
 
-    def create(self, sku: str, description: str, unit: str) -> dict:
+    def create(
+        self,
+        sku: str,
+        description: str,
+        unit: str,
+        empresa_id: str,
+    ) -> dict:
         try:
             with get_connection() as conn:
                 row = conn.execute(
                     """
-                    INSERT INTO produto (sku, descricao, unidade)
-                    VALUES (%s, %s, %s)
+                    INSERT INTO wms.produto
+                        (sku, descricao, unidade, empresa_id)
+                    VALUES (%s, %s, %s, %s)
                     RETURNING id, sku, descricao, unidade
                     """,
-                    (sku, description, unit),
+                    (sku, description, unit, empresa_id),
                 ).fetchone()
 
                 return {
@@ -28,22 +33,22 @@ class PostgresProductRepository:
                 }
 
         except psycopg.errors.UniqueViolation as exc:
-            if exc.diag.constraint_name == "produto_sku_key":
+            if exc.diag.constraint_name == "uq_wms_produto_empresa_sku":
                 raise DomainError(
                     "SKU_ALREADY_EXISTS",
-                    f"Product SKU {sku} already exists",
+                    f"Product SKU {sku} already exists in this company",
                 ) from exc
             raise
 
-    def get_by_id(self, product_id: str) -> dict | None:
+    def get_by_id(self, product_id: str, empresa_id: str) -> dict | None:
         with get_connection() as conn:
             row = conn.execute(
                 """
                 SELECT id, sku, descricao, unidade
-                FROM produto
-                WHERE id = %s
+                FROM wms.produto
+                WHERE id = %s AND empresa_id = %s
                 """,
-                (product_id,),
+                (product_id, empresa_id),
             ).fetchone()
 
             if row is None:

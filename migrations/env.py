@@ -25,13 +25,16 @@ LOCAL_DATABASE_HOSTS = {
 
 
 def get_database_url() -> str:
-    """Obtém e valida a URL do banco de dados."""
+    """Obtém e valida a URL exclusiva para execução das migrações."""
 
-    database_url = os.environ.get("DATABASE_URL", "").strip()
+    database_url = (
+        os.environ.get("DATABASE_MIGRATION_URL", "").strip()
+        or os.environ.get("DATABASE_URL", "").strip()
+    )
 
     if not database_url:
         raise RuntimeError(
-            "A variável DATABASE_URL não está configurada."
+            "Configure DATABASE_MIGRATION_URL ou DATABASE_URL."
         )
 
     url = make_url(database_url)

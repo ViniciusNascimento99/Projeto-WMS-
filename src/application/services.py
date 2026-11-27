@@ -77,9 +77,13 @@ class WmsService:
     def _emit(self, name: str, correlation_id: str, **fields) -> None:
         self.publisher.publish(make_event(name, correlation_id, **fields))
     # ----------------------------------------------------------- Produtos
-    def create_product(self, sku: str, description: str, unit: str) -> dict:
+    def create_product(
+        self, sku: str, description: str, unit: str, empresa_id: str
+    ) -> dict:
         if self.product_repository is not None:
-            return self.product_repository.create(sku, description, unit)
+            return self.product_repository.create(
+                sku, description, unit, empresa_id
+            )
 
         if self.store.has_sku(sku):
             raise DomainError("SKU_ALREADY_EXISTS", f"Product SKU {sku} already exists")
@@ -87,9 +91,9 @@ class WmsService:
         self.store.products[product.id] = product
         return asdict(product)
 
-    def get_product(self, product_id: str) -> dict:
+    def get_product(self, product_id: str, empresa_id: str) -> dict:
         if self.product_repository is not None:
-            product = self.product_repository.get_by_id(product_id)
+            product = self.product_repository.get_by_id(product_id, empresa_id)
             if product is None:
                 raise not_found("PRODUCT_NOT_FOUND", "Product not found")
             return product

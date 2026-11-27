@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi.testclient import TestClient
 
 from main import app
+from src.config.request_context import RequestContext, get_request_context
 
 
 SECRET = "chave-de-teste-siglog-wms-32-bytes-minimo"
@@ -74,9 +75,18 @@ def test_rota_protegida_sem_empresa_id():
 def test_rota_protegida_com_token_valido():
     token = gerar_token()
 
-    response = TestClient(app).get(
-        ROTA,
-        headers={"Authorization": f"Bearer {token}"},
+    app.dependency_overrides[get_request_context] = lambda: RequestContext(
+        usuario_id="66666666-6666-4666-8666-666666666666",
+        empresa_id="11111111-1111-4111-8111-111111111111",
+        perfil_id="33333333-3333-4333-8333-333333333333",
     )
+
+    try:
+        response = TestClient(app).get(
+            ROTA,
+            headers={"Authorization": f"Bearer {token}"},
+        )
+    finally:
+        app.dependency_overrides.pop(get_request_context, None)
 
     assert response.status_code == 404

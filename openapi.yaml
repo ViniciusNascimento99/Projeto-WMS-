@@ -8,6 +8,67 @@ servers:
 security:
 - bearerAuth: []
 paths:
+  /auth/login:
+    post:
+      summary: Autenticar usuário e emitir JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Autenticação realizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: E-mail ou senha inválidos
+        '403':
+          description: Usuário ou empresa sem acesso ativo
+        '500':
+          description: Autenticação não configurada
+  /auth/status:
+    get:
+      summary: Consultar se o primeiro cadastro é necessário
+      security: []
+      responses:
+        '200':
+          description: Estado do cadastro inicial
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CadastroStatus'
+        '503':
+          description: Tabelas do banco ainda não foram criadas
+  /auth/registrar:
+    post:
+      summary: Registrar empresa e administrador inicial
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroRequest'
+      responses:
+        '201':
+          description: Cadastro recebido e aguardando aprovação
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistroResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          description: Dados de cadastro inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /products:
     post:
       summary: Cadastrar produto (RF01)
@@ -362,6 +423,88 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
   schemas:
+    LoginRequest:
+      type: object
+      required:
+      - email
+      - senha
+      properties:
+        email:
+          type: string
+          format: email
+        senha:
+          type: string
+          minLength: 1
+    LoginResponse:
+      type: object
+      required:
+      - access_token
+      - token_type
+      - expires_in
+      - usuario
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: bearer
+        expires_in:
+          type: integer
+          description: Duração do token em segundos
+        usuario:
+          type: object
+          required:
+          - id
+          - nome
+          - email
+          - perfil
+          properties:
+            id:
+              type: string
+              format: uuid
+            nome:
+              type: string
+            email:
+              type: string
+              format: email
+            perfil:
+              type: string
+    CadastroStatus:
+      type: object
+      required:
+      - precisa_cadastro
+      properties:
+        precisa_cadastro:
+          type: boolean
+    RegistroRequest:
+      type: object
+      required:
+      - razao_social
+      - cnpj
+      - nome
+      - email
+      - senha
+      properties:
+        razao_social:
+          type: string
+        cnpj:
+          type: string
+          description: CNPJ com 14 dígitos
+        nome:
+          type: string
+        email:
+          type: string
+          format: email
+        senha:
+          type: string
+          minLength: 8
+    RegistroResponse:
+      type: object
+      required:
+      - mensagem
+      properties:
+        mensagem:
+          type: string
     Error:
       type: object
       required:
