@@ -1,12 +1,13 @@
-from fastapi import FastAPI, Request, Depends
+from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware  # NOVO
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from src.config.security import require_auth
 
 from src.api.addresses import router as addresses_router
+from src.api.auth import router as auth_router
 from src.api.allocations import router as allocations_router
 from src.api.inventory import router as inventory_router
 from src.api.packing import router as packing_router
@@ -16,13 +17,13 @@ from src.api.receipts import router as receipts_router
 from src.api.shipments import router as shipments_router
 from src.domain.errors import DomainError
 
+
 app = FastAPI(
     title="SIG-Log WMS",
     description="API de Gestão de Estoque e Centro de Distribuição",
     version="1.0.0",
 )
 
-# NOVO: permite que o front-end (http://localhost:8080) chame a API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:8080"],
@@ -31,7 +32,6 @@ app.add_middleware(
 )
 
 
-# Erros no formato do contrato
 @app.exception_handler(DomainError)
 async def domain_error_handler(request: Request, exc: DomainError):
     return JSONResponse(
@@ -55,7 +55,6 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
 
 @app.exception_handler(StarletteHTTPException)
 async def http_error_handler(request: Request, exc: StarletteHTTPException):
-    # JSON malformado chega como 400; o contrato trata como erro de validação (422)
     if exc.status_code == 400:
         return JSONResponse(
             status_code=422,
@@ -103,3 +102,7 @@ for router in (
         prefix="/api/v1",
         dependencies=[Depends(require_auth)],
     )
+
+
+# Login público (emite o JWT usado pelas rotas acima)
+app.include_router(auth_router, prefix="/api/v1")

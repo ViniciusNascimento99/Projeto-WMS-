@@ -1,4 +1,3 @@
-
 # Ambiente local do SIG-Log WMS: API + RabbitMQ + Front-end (+ PostgreSQL opcional).
 
 name: siglog-wms
@@ -8,11 +7,16 @@ services:
     build: .
     ports:
       - "8001:8000"
+    volumes:
+      - ./migrations:/app/migrations
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-wms}:${POSTGRES_PASSWORD:-wms_dev}@postgres:5432/${POSTGRES_DB:-wms}
-      RABBITMQ_URL: amqp://${RABBITMQ_USER:-wms}:${RABBITMQ_PASSWORD:-wms_dev}@rabbitmq:5672/
-      JWT_SECRET: ${JWT_SECRET}
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-wms}:${POSTGRES_PASSWORD:-wms_dev}@postgres:5432/${POSTGRES_DB:-wms}"
+      RABBITMQ_URL: "amqp://${RABBITMQ_USER:-wms}:${RABBITMQ_PASSWORD:-wms_dev}@rabbitmq:5672/"
+      JWT_SECRET: "${JWT_SECRET:-}"
+      WMS_STORAGE: "postgres"
     depends_on:
+      postgres:
+        condition: service_healthy
       rabbitmq-setup:
         condition: service_completed_successfully
 
@@ -26,8 +30,7 @@ services:
 
   # PostgreSQL opcional
   postgres:
-    image: postgres:16-alpine
-    profiles: ["db"]
+    image: postgres:18-alpine
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-wms}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wms_dev}
@@ -35,7 +38,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata18:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -58,6 +61,7 @@ services:
       timeout: 5s
       retries: 10
 
+  # Importa exchanges, filas e bindings após o RabbitMQ estar disponível.
   rabbitmq-setup:
     image: curlimages/curl:8.10.1
     depends_on:
@@ -71,7 +75,7 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        for i in $(seq 1 10); do
+        for i in $$(seq 1 10); do
           if curl -sSf -u "$${RABBITMQ_USER}:$${RABBITMQ_PASSWORD}" \
             -H "content-type: application/json" \
             -X POST http://rabbitmq:15672/api/definitions \
@@ -88,4 +92,5 @@ services:
 
 volumes:
   pgdata:
+  pgdata18:
   rabbitdata:
